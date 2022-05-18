@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": "1.14.0",
+    "libraryName": "carvajal",
+    "libraryId": "e293a630-29de-4b6c-b2b4-87642407a8ea",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "carvajal",
+    "solutionShortDescription": "carvajal description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
