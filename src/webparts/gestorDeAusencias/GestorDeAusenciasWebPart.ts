@@ -11,7 +11,7 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import * as strings from 'GestorDeAusenciasWebPartStrings';
 import GestorDeAusencias from './components/GestorDeAusencias';
 import { IGestorDeAusenciasProps } from './components/IGestorDeAusenciasProps';
-
+import { getRandomString } from "@pnp/core";
 export interface IGestorDeAusenciasWebPartProps {
   description: string;
 }
@@ -28,6 +28,14 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
   }
 
   public render(): void {
+    console.clear();
+    console.log("Bienvenido Desarrollador");
+    (function() {
+      console.log("validando instalación pnp");
+      // get and log a random string
+      console.log(getRandomString(20));
+      console.log("fin de validación de pnp");
+  })()
     const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
       GestorDeAusencias,
       {
