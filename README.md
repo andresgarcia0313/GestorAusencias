@@ -24,6 +24,9 @@ Instalar librerias del proyecto spfx desde command prompt, desde el directorio d
 Instalar certificado de seguridad para conectarse con el espacio de trabajo online
   gulp trust-dev-cert
 
+En el archivo launch.json de la carpeta .vscode ya se dejo la ruta web para depurar con visual studio code fuente de información:
+
+https://docs.microsoft.com/es-es/sharepoint/dev/spfx/debug-in-vscode
 
 errores:
   No ejecutar con permisos adminsitrativos
