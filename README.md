@@ -6,6 +6,29 @@ Short summary on functionality and used technologies.
 
 [picture of the solution in action, if possible]
 
+## Instalar ambiente de desarrollo
+
+Lea todo el presente documento antes de instalar el ambiente de desarrollo.
+
+Instalar chocolatey desde su página web
+Instalar nvm con chocolatey en un command prompt con permisos administrativos ejecutamos:
+  choco install nvm.install -y  
+Instalar node después de finalizar lo anterior en una nueva ventana de command prompt:
+  nvm install 14.19.1
+Activamos la versión de node previamente instalada:
+  nvm use 14.19.1
+Instalamos librerias para ejecución de sharepoint
+  npm install gulp-cli yo @microsoft/generator-sharepoint --global
+Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
+  npm install
+Instalar certificado de seguridad para conectarse con el espacio de trabajo online
+  gulp trust-dev-cert
+
+
+errores:
+  No ejecutar con permisos adminsitrativos
+  Ejecutar comandos en powershell
+
 ## Used SharePoint Framework Version
 
 ![version](https://img.shields.io/badge/version-1.13-green.svg)
