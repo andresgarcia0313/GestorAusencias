@@ -31,12 +31,16 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
     const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
       GestorDeAusencias,
       {
+        description: this.properties.description
+      }
+      /**  {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName
-      }
+      }*/
+
     );
 
     ReactDom.render(element, this.domElement);

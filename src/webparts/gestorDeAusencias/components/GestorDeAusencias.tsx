@@ -1,9 +1,47 @@
 import * as React from 'react';
 import styles from './GestorDeAusencias.module.scss';
 import { IGestorDeAusenciasProps } from './IGestorDeAusenciasProps';
+import { IGestorDeAusenciasPreviewProps } from './IGestorDeAusenciasPreviewProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-
+/** importar los componentes de Fabric React que queremos usar */
+ import {
+  DocumentCard,
+  DocumentCardPreview,
+  DocumentCardTitle,
+  DocumentCardActivity,
+  IDocumentCardPreviewProps
+} from 'office-ui-fabric-react/lib/DocumentCard';
 export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, {}> {
+  public render(): JSX.Element {
+    /*IDocumentCardPreviewProps*/ 
+    const previewProps: IGestorDeAusenciasPreviewProps = {
+      previewImages: [
+        {
+          previewImageSrc: String(require('./document-preview.png')),
+          iconSrc: String(require('./icon-ppt.png')),
+          width: 318,
+          height: 196,
+          accentColor: '#ce4b1f'
+        }
+      ],
+    };
+  
+    return (
+      <DocumentCard onClickHref='http://bing.com'>
+        <DocumentCardPreview { ...previewProps } />
+        <DocumentCardTitle title='Revenue stream proposal fiscal year 2016 version02.pptx' />
+        <DocumentCardActivity
+          activity='Created Feb 23, 2016'
+          people={
+            [
+              { name: 'Kat Larrson', profileImageSrc: String(require('./avatar-kat.png')) }
+            ]
+          }
+        />
+      </DocumentCard>
+    );
+  }
+  /** 
   public render(): React.ReactElement<IGestorDeAusenciasProps> {
     const {
       description,
@@ -40,4 +78,5 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
       </section>
     );
   }
+  */
 }
