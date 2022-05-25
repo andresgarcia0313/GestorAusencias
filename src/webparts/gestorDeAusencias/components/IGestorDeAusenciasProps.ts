@@ -4,4 +4,6 @@ export interface IGestorDeAusenciasProps {
   environmentMessage: string;
   hasTeamsContext: boolean;
   userDisplayName: string;
+  context: any;
+  sp: any;
 }

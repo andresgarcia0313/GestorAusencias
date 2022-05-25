@@ -12,6 +12,7 @@ import * as strings from 'GestorDeAusenciasWebPartStrings';
 import GestorDeAusencias from './components/GestorDeAusencias';
 import { IGestorDeAusenciasProps } from './components/IGestorDeAusenciasProps';
 import { getRandomString } from "@pnp/core";
+import { spfi, SPFx } from "@pnp/sp";
 export interface IGestorDeAusenciasWebPartProps {
   description: string;
 }
@@ -20,11 +21,14 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
-
-  protected onInit(): Promise<void> {
+  private sp: any;
+  protected async onInit(): Promise<void> {
+    console.log("Inicio Del Elemento Web Gestor De Ausencias");
     this._environmentMessage = this._getEnvironmentMessage();
-
-    return super.onInit();
+    await super.onInit();
+    const sp = spfi().using(SPFx(this.context));
+    this.sp=sp;
+    return await super.onInit();
   }
 
   public render(): void {
@@ -36,17 +40,18 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
       console.log(getRandomString(20));
       console.log("fin de validación de pnp");
   })()
-    const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
+  const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
       GestorDeAusencias,
       {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
+        userDisplayName: this.context.pageContext.user.displayName,
+        context: this.context,
+        sp: this.sp
       }
     );
-
     ReactDom.render(element, this.domElement);
   }
 
