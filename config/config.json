@@ -13,6 +13,7 @@
   },
   "externals": {},
   "localizedResources": {
-    "GestorDeAusenciasWebPartStrings": "lib/webparts/gestorDeAusencias/loc/{locale}.js"
+    "GestorDeAusenciasWebPartStrings": "lib/webparts/gestorDeAusencias/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
   }
 }
