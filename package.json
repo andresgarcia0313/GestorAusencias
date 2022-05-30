@@ -4,6 +4,7 @@
   "private": true,
   "main": "lib/index.js",
   "scripts": {
+    "start": "gulp serve",
     "build": "gulp bundle",
     "clean": "gulp clean",
     "test": "gulp test"

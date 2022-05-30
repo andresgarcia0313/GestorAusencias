@@ -2,35 +2,63 @@ import * as React from 'react';
 import styles from './GestorDeAusencias.module.scss';
 import { IGestorDeAusenciasProps } from './IGestorDeAusenciasProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import { spfi } from "@pnp/sp";
+import { spfi,SPFx } from "@pnp/sp";
 import "@pnp/sp/webs";
+import "@pnp/sp/lists";
+import "@pnp/sp/items";
 import "@pnp/sp/site-users/web";
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, {}> {
   private personToBeAbsent: any;
+  private _items: any[] = [];
+  private sp=spfi().using(SPFx(this.props.context));
+  constructor(props: IGestorDeAusenciasProps, state: any) {
+    super(props);
+    console.log("constructor() de Gestor Ausencias");
+    this.state = {
+      items: []
+    }
+  }
+  public componentDidMount(): void {
+    console.log("componentDidMount() de Gestor Ausencias")
+    this._getItems();
+  }
   private _getPeoplePickerItems(items: any[]) {
+    console.log("_getPeoplePickerItems() de Gestor Ausencias")
     if (items.length >= 1) {
       this.personToBeAbsent = items[0];
       console.log('Persona:', this.personToBeAbsent);
     }
   }
+  public async getItemsByNameList(listname: string): Promise<any[]> {
+    console.log("getItemsByNameList() de Gestor Ausencias")
+    return new Promise<any[]>(async (resolve, reject) => {
+      try {
+        var items: any[] = await this.sp.web.lists.getByTitle(listname).items();
+        console.log(items);
+        debugger;
+        return items;
+      }
+      catch (error) { console.log(error); }
+    });
+  }
+  public _getItems = (): void => {
+    console.log("_getItems() de Gestor Ausencias")
+    this.getItemsByNameList('Tareas_FT-Facturacion Servicios').then(listItems => {
+      console.log(listItems);
+      this._items = listItems;
+      this.setState({ items: listItems });
+    });
+  }
   public render(): React.ReactElement<IGestorDeAusenciasProps> {
-    const {
-      description,
-      isDarkTheme,
-      environmentMessage,
-      hasTeamsContext,
-      userDisplayName,
-      context
-    } = this.props;
-    const users = this.props.sp.web.siteUsers();
+    console.log("render() de Gestor Ausencias")
+    const { description, isDarkTheme, hasTeamsContext, userDisplayName, context} = this.props;
+    const users = this.sp.web.siteUsers();
     return (
       <section className={`${styles.gestorDeAusencias} ${hasTeamsContext ? styles.teams : ''}`}>
         <div className={styles.welcome}>
           <h2>Bienvenido, {escape(userDisplayName)}!</h2>
-          <div>{environmentMessage}</div>
           <div>Descripción del presente módulo : <strong>{escape(description)}</strong></div>
         </div>
         <div>

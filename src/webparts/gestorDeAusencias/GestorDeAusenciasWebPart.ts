@@ -1,13 +1,9 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import {
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
+import { IPropertyPaneConfiguration, PropertyPaneTextField } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-
 import * as strings from 'GestorDeAusenciasWebPartStrings';
 import GestorDeAusencias from './components/GestorDeAusencias';
 import { IGestorDeAusenciasProps } from './components/IGestorDeAusenciasProps';
@@ -16,42 +12,31 @@ import { spfi, SPFx } from "@pnp/sp";
 export interface IGestorDeAusenciasWebPartProps {
   description: string;
 }
-
 export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGestorDeAusenciasWebPartProps> {
-
   private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
   private sp: any;
+  /**
+   * Inicia el elemento web
+   * @returns 
+   */
   protected async onInit(): Promise<void> {
-    console.log("Inicio Del Elemento Web Gestor De Ausencias");
-    this._environmentMessage = this._getEnvironmentMessage();
-    await super.onInit();
-    const sp = spfi().using(SPFx(this.context));
-    this.sp=sp;
+    this.sp = spfi().using(SPFx(this.context));
     return await super.onInit();
   }
-
   public render(): void {
     console.clear();
-    console.log("Bienvenido Desarrollador");
-    (function() {
-      console.log("validando instalación pnp");
-      // get and log a random string
-      console.log(getRandomString(20));
-      console.log("fin de validación de pnp");
-  })()
-  const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
-      GestorDeAusencias,
-      {
-        description: this.properties.description,
-        isDarkTheme: this._isDarkTheme,
-        environmentMessage: this._environmentMessage,
-        hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName,
-        context: this.context,
-        sp: this.sp
-      }
-    );
+    // Valida que este instalado la librería pnpjs
+    (() => { console.log("PNPJS instalado: "+getRandomString(20)) })()
+    //Crea el elemento react enviandole propiedades
+    const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
+      GestorDeAusencias, {
+      description: this.properties.description,
+      isDarkTheme: this._isDarkTheme,
+      hasTeamsContext: !!this.context.sdks.microsoftTeams,
+      userDisplayName: this.context.pageContext.user.displayName,
+      context: this.context
+    });
+    //Renderiza en elemento
     ReactDom.render(element, this.domElement);
   }
 
