@@ -15,12 +15,8 @@ export interface IGestorDeAusenciasWebPartProps {
 export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGestorDeAusenciasWebPartProps> {
   private _isDarkTheme: boolean = false;
   private sp: any;
-  /**
-   * Inicia el elemento web
-   * @returns 
-   */
   protected async onInit(): Promise<void> {
-    this.sp = spfi().using(SPFx(this.context));
+    //this.sp = spfi().using(SPFx(this.context));
     return await super.onInit();
   }
   public render(): void {
@@ -38,6 +34,7 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
     });
     //Renderiza en elemento
     ReactDom.render(element, this.domElement);
+    
   }
 
   private _getEnvironmentMessage(): string {
