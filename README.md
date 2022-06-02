@@ -9,21 +9,60 @@ Short summary on functionality and used technologies.
 ## Instalar ambiente de desarrollo
 
 Lea todo el presente documento antes de instalar el ambiente de desarrollo.
-
-Instalar chocolatey desde su página web
-Instalar nvm con chocolatey en un command prompt con permisos administrativos ejecutamos:
-  choco install nvm.install -y  
-Instalar node después de finalizar lo anterior en una nueva ventana de command prompt:
-  nvm install 14.19.1
-Activamos la versión de node previamente instalada:
-  nvm use 14.19.1
-Instalamos librerias para ejecución de sharepoint
-  npm install gulp-cli yo @microsoft/generator-sharepoint --global
-Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
-  npm install
-Instalar certificado de seguridad para conectarse con el espacio de trabajo online
+Windows
+  1. Instalar chocolatey desde su página web
+  2. Instalar nvm con chocolatey en un command prompt con permisos administrativos ejecutamos:
+      choco install nvm.install -y  
+  3. Instalar node después de finalizar lo anterior en una nueva ventana de command prompt:
+      nvm install 14.19.1
+  4. Activamos la versión de node previamente instalada:
+      nvm use 14.19.1
+  5. Instalamos librerias para ejecución de sharepoint
+      npm install gulp-cli yo @microsoft/generator-sharepoint --global
+  6. Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
+      npm install
+  7. Instalar certificado de seguridad para conectarse con el espacio de trabajo online
   gulp trust-dev-cert
 
+Linux
+  1. Instalar nvm: Descargar y ejecutar automaticamente el instalador:
+    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+    cree un archivo .bashrc en la carpeta de usuario y agregue:
+    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+  2. Valide la versión de nvm
+      nvm --version
+  3. instale la versión 14
+      nvm install 14.19.3 && nvm use 14.19.3 && node -v
+  4. Instalamos librerias para ejecución de sharepoint
+      npm install gulp-cli --global && /
+      npm install yo --global && /
+      npm install  @microsoft/generator-sharepoint --global
+  6. Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
+      npm install
+  7. Ejecute sin instalar el certificado
+      gulp serve --nobrowser
+      Antes de abrir el área de trabajo de SharePoint Online, acceda a la URL https://localhost:4321/temp/manifests.js en la advertensia que no es seguro, click en continuar. 
+  8. Ahora abra el área de trabajo de SharePoint Online.
+      "https://carvajal.sharepoint.com/sites/flujosprocesos/_layouts/workbench.aspx"  
+  9. Crear certificado de seguridad autofirmado en el proyecto
+      gulp trust-dev-cert
+  10. Instalar el certificado 
+      sudo apt install libnss3-tools -y
+      sudo chmod +x installspfx.sh
+      sudo mkdir /usr/local/share/ca-certificates/extra
+      cp ~/.rushstack/rushstack-serve.pem /usr/local/share/ca-certificates/extra/rushstack-serve.crt      
+      sudo update-ca-certificates -f
+
+  11. Instale el certificado en el navegador "No funciona estos pasos"
+      cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.pem 
+      cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.crt
+      cp ~/.rushstack/rushstack-serve.key ./rushstack-serve.key 
+      sudo ./installspfx.sh
+  13. Ahora abra el área de trabajo de SharePoint Online.
+
+      
 En el archivo launch.json de la carpeta .vscode ya se dejo la ruta web para depurar con visual studio code fuente de información:
 
 https://docs.microsoft.com/es-es/sharepoint/dev/spfx/debug-in-vscode
