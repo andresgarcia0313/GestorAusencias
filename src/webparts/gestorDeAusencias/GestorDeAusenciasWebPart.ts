@@ -23,6 +23,7 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
       isDarkTheme: this._isDarkTheme,
       hasTeamsContext: !!this.context.sdks.microsoftTeams,
       userDisplayName: this.context.pageContext.user.displayName,
+      user:this.context.pageContext.user,
       context: this.context
     });//Creaciónn de objeto react con sus props o propiedades    
     ReactDom.render(element, this.domElement);//Renderiza en elemento    

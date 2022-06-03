@@ -7,30 +7,15 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import "@pnp/sp/site-users/web";
-
-
-
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
-
-/**Librerias de mapas */
-import "ol/ol.css";
-import { Map, View } from 'ol';//librerias para crear mapa y view para ubicarse dentro del mapa
-import TileLayer from 'ol/layer/Tile';//Libreria para incluir capas de servidor de mapas
-import XYZ from 'ol/source/XYZ';//xyz representan la posición de mapa a mostrar descargando las baldosas que componen la imagen del mapa
-import { fromLonLat } from 'ol/proj';//permite utilizar longitud y latitud
-
-
 /** variable de agrupamientos*/
-const groupByFields: IGrouping[] = [
-  {
-    name: "ListName",
-    order: GroupOrder.ascending
-  },];
+const groupByFields: IGrouping[] = [  {    name: "ListName", order: GroupOrder.ascending  }];
+
 export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, any> {
-  private personToBeAbsent: any;
-  private sp = spfi().using(SPFx(this.props.context));
+  private personToBeAbsent: any;//Variable para almacenar datos de persona a ausentar
+  private sp = spfi().using(SPFx(this.props.context));//inicializa libreria pnpjs
   constructor(props: IGestorDeAusenciasProps) {
     super(props);
     this.state = {}
@@ -59,28 +44,29 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
   }
   public async getTasksFromTaskLists() {
     var dataNameList = await this.getListNameFromService();
-    var dataTaskAllList: any;
-    var items: any;
-    for (let list of dataNameList) {
-      var data = this.sp.web.lists.getByTitle(list.Title).items.select("Title");
-      //debugger;
+    var dataPromiseTaskAllList:any[] = new Array(); 
+    var items:any;
+    for(let list=0;list<dataNameList.length;list++){
+      console.log(dataNameList[list].Title);
+      items = this.sp.web.lists.getByTitle(dataNameList[list].Title).items();
+      dataPromiseTaskAllList.push(items);   
     }
+    var result= await Promise.all(dataPromiseTaskAllList);
+    console.log(result);
   }
   public setListItemsToStates = (listName: string): void => {
     this.getListItemsByNameList(listName).then(res => { this.setState({ items: res }); });
   }
   public render(): React.ReactElement<IGestorDeAusenciasProps,any> {
-    console.clear();
-    console.log("render() de Gestor Ausencias"
-      + new Date().toISOString());
+    console.log("render() de Gestor Ausencias" + new Date().toISOString());
     const { description, isDarkTheme, hasTeamsContext, userDisplayName, context } = this.props;
     const users = this.sp.web.siteUsers();
-
-
+    console.log("datos usuario");
+    console.dir(this.props.user);
+    debugger;
     return (
       <section className={`${styles.gestorDeAusencias} ${hasTeamsContext ? styles.teams : ''}`}>
-        <div className={styles.welcome}>
-          
+        <div className={styles.welcome}>          
           <ListView items={this.state.items}
             viewFields={[{ name: "Title", displayName: "Columna1", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 }]}
             iconFieldName="ServerRelativeUrl" compact={true}

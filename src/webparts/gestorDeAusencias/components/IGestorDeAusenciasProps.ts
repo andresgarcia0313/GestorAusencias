@@ -3,5 +3,6 @@ export interface IGestorDeAusenciasProps {
   isDarkTheme: boolean;
   hasTeamsContext: boolean;
   userDisplayName: string;
+  user:any;
   context: any;
 }
