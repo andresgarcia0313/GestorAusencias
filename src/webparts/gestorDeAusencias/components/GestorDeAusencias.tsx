@@ -11,7 +11,7 @@ import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
 /** variable de agrupamientos*/
-const groupByFields: IGrouping[] = [  {    name: "ListName", order: GroupOrder.ascending  }];
+const groupByFields: IGrouping[] = [{ name: "ListName", order: GroupOrder.ascending }];
 
 export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, any> {
   private personToBeAbsent: any;//Variable para almacenar datos de persona a ausentar
@@ -44,29 +44,30 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
   }
   public async getTasksFromTaskLists() {
     var dataNameList = await this.getListNameFromService();
-    var dataPromiseTaskAllList:any[] = new Array(); 
-    var items:any;
-    for(let list=0;list<dataNameList.length;list++){
-      console.log(dataNameList[list].Title);
-      items = this.sp.web.lists.getByTitle(dataNameList[list].Title).items();
-      dataPromiseTaskAllList.push(items);   
+    var dataPromiseTaskAllList: any[] = new Array();
+    var items: any;
+    var userid = this.sp.web.siteUsers.getByEmail(this.props.user.email)();
+    userid.then(r => { console.log("idUser:" + r.Id); })
+    for (let num = 0; num < dataNameList.length; num++) {
+      items = this.sp.web.lists.getByTitle(dataNameList[num].Title).items();
+      dataPromiseTaskAllList.push(items);
     }
-    var result= await Promise.all(dataPromiseTaskAllList);
+    var result = await Promise.all(dataPromiseTaskAllList);
     console.log(result);
   }
   public setListItemsToStates = (listName: string): void => {
     this.getListItemsByNameList(listName).then(res => { this.setState({ items: res }); });
   }
-  public render(): React.ReactElement<IGestorDeAusenciasProps,any> {
+  public render(): React.ReactElement<IGestorDeAusenciasProps, any> {
     console.log("render() de Gestor Ausencias" + new Date().toISOString());
     const { description, isDarkTheme, hasTeamsContext, userDisplayName, context } = this.props;
-    const users = this.sp.web.siteUsers();
-    console.log("datos usuario");
+    const users = this.sp.web.siteUsers().then(r => { console.log("Usuarios Del Sitio:"); console.dir(r) });
+    console.log("Usuario");
     console.dir(this.props.user);
-    debugger;
+   
     return (
       <section className={`${styles.gestorDeAusencias} ${hasTeamsContext ? styles.teams : ''}`}>
-        <div className={styles.welcome}>          
+        <div className={styles.welcome}>
           <ListView items={this.state.items}
             viewFields={[{ name: "Title", displayName: "Columna1", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 }]}
             iconFieldName="ServerRelativeUrl" compact={true}
