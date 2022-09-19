@@ -16,7 +16,7 @@ export default class GestorDeAusenciasWebPart extends BaseClientSideWebPart<IGes
   protected async onInit(): Promise<void> { return await super.onInit(); }
   public render(): void {
     console.clear();//limpia la consola
-    (() => { console.log("PNPJS instalado: " + getRandomString(20)) })()// Valida que este instalado la librería pnpjs
+    //(() => { console.log("PNPJS instalado: " + getRandomString(20)) })()// Valida que este instalado la librería pnpjs
     const element: React.ReactElement<IGestorDeAusenciasProps> = React.createElement(
       GestorDeAusencias, {
       description: this.properties.description,

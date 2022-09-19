@@ -4,7 +4,9 @@
 
 Short summary on functionality and used technologies.
 
-[picture of the solution in action, if possible]
+Cambiar versión de node de desarrollo
+
+nvm install 14.19.3; nvm use 14.19.3;npm install gulp-cli yo @microsoft/generator-sharepoint --global; gulp serve
 
 # Volver De Otro Desarrollo
 
@@ -40,38 +42,37 @@ Linux
 1. Instalar nvm: Descargar y ejecutar automaticamente el instalador:
    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
-    cree un archivo .bashrc en la carpeta de usuario y agregue:
-    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-  2. Valide la versión de nvm
-      nvm --version
-  3. instale la versión 14
-      nvm install 14.19.3 && nvm use 14.19.3 && node -v
-  4. Instalamos librerias para ejecución de sharepoint
-      npm install gulp-cli --global && /
-      npm install yo --global && /
-      npm install  @microsoft/generator-sharepoint --global
-  6. Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
-      npm install
-  7. Ejecute sin instalar el certificado
-      gulp serve --nobrowser
-      Antes de abrir el área de trabajo de SharePoint Online, acceda a la URL https://localhost:4321/temp/manifests.js en la advertensia que no es seguro, click en continuar.
-  8. Ahora abra el área de trabajo de SharePoint Online.
-      "https://carvajal.sharepoint.com/sites/flujosprocesos/_layouts/workbench.aspx"  9. Crear certificado de seguridad autofirmado en el proyecto
-      gulp trust-dev-cert
-  10. Instalar el certificado
-      sudo apt install libnss3-tools -y
-      sudo chmod +x installspfx.sh
-      sudo mkdir /usr/local/share/ca-certificates/extra
-      cp ~/.rushstack/rushstack-serve.pem /usr/local/share/ca-certificates/extra/rushstack-serve.crt
-    sudo update-ca-certificates -f
-
-11. Instale el certificado en el navegador "No funciona estos pasos"
-    cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.pem
-    cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.crt
-    cp ~/.rushstack/rushstack-serve.key ./rushstack-serve.key
-    sudo ./installspfx.sh
-12. Ahora abra el área de trabajo de SharePoint Online.
+   cree un archivo .bashrc en la carpeta de usuario y agregue:
+   export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+2. Valide la versión de nvm
+   nvm --version
+3. instale la versión 14
+   nvm install 14.19.3 && nvm use 14.19.3 && node -v
+4. Instalamos librerias para ejecución de sharepoint
+   npm install gulp-cli --global && /
+   npm install yo --global && /
+   npm install  @microsoft/generator-sharepoint --global
+5. Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
+   npm install
+6. Ejecute sin instalar el certificado
+   gulp serve --nobrowser
+   Antes de abrir el área de trabajo de SharePoint Online, acceda a la URL https://localhost:4321/temp/manifests.js en la advertensia que no es seguro, click en continuar.
+7. Ahora abra el área de trabajo de SharePoint Online.
+   "https://carvajal.sharepoint.com/sites/flujosprocesos/_layouts/workbench.aspx"  9. Crear certificado de seguridad autofirmado en el proyecto
+   gulp trust-dev-cert
+8. Instalar el certificado
+   sudo apt install libnss3-tools -y
+   sudo chmod +x installspfx.sh
+   sudo mkdir /usr/local/share/ca-certificates/extra
+   cp ~/.rushstack/rushstack-serve.pem /usr/local/share/ca-certificates/extra/rushstack-serve.crt
+   sudo update-ca-certificates -f
+9. Instale el certificado en el navegador "No funciona estos pasos"
+   cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.pem
+   cp ~/.rushstack/rushstack-serve.pem ./rushstack-serve.crt
+   cp ~/.rushstack/rushstack-serve.key ./rushstack-serve.key
+   sudo ./installspfx.sh
+10. Ahora abra el área de trabajo de SharePoint Online.
 
 En el archivo launch.json de la carpeta .vscode ya se dejo la ruta web para depurar con visual studio code fuente de información:
 
