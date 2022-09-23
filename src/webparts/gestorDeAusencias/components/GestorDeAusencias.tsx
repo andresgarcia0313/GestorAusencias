@@ -13,28 +13,26 @@ import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp
 import { DateTimePicker, DateConvention, TimeConvention } from '@pnp/spfx-controls-react/lib/DateTimePicker';
 /** variable de agrupamientos*/
 const groupByFields: IGrouping[] = [{ name: "ListName", order: GroupOrder.ascending }];
-export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, any> {
+export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, any> {//Clase GestorDeAusencias que hereda de React.Component
   private sp = spfi().using(SPFx(this.props.context));//inicializa libreria pnpjs
   constructor(props: IGestorDeAusenciasProps) {
     super(props);//ejecuta el constructor de la clase padre
-    this.state = {}//Estable la variable estado del componente
+    this.state = {showHidePeoplePickerAusente: false}//Estable la variable estado del componente
+    
   }
   public async componentDidMount(): Promise<void> {//Se ejecuta después de que el componente react se monta o se muestra
-    let groups = await this.sp.web.currentUser.groups();
-    for (let group of groups){
-      console.log("Grupo:"+group.Title);
-    }
-    debugger;
+    let groups = await this.sp.web.currentUser.groups();//Obtener grupos del usuario que inicio sesión
+    for (let group of groups) console.log("Grupo:" + group.Title); // Mostrar en consola los titulos de los grupos del usuario que inicio sesión
     var userId = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//obtiene el id del usuario de contexto instanciadose y ejecutandose en el acto
-    var userTask = await this.getTasksFromTaskListsByUserId(userId);
-    this.setState({ items: userTask });
+    var userTask = await this.getTasksFromTaskListsByUserId(userId);//Obtener tareas del usuario
+    this.setState({ items: userTask });//Establecer en state las actividades para que se presenten en la tabla de tareas
   }
   private getPeoplePickerItems = async (items: any[]) => {//Obtiene los elementos del selector de personas
-    this.setState({items:[]});
+    this.setState({ items: [] });//Borra el listado de tareas del state y a su vez de la tabla de tareas que ve el usuario
     if (items.length >= 1) {//Validar que exista una persona seleccionada de
-      var userId = (await this.sp.web.siteUsers.getByEmail(items[0].secondaryText)()).Id//obtener el id por correo
-      var userTask = await this.getTasksFromTaskListsByUserId(userId);
-      this.setState({ items: userTask });
+      var userId = (await this.sp.web.siteUsers.getByEmail(items[0].secondaryText)()).Id//obtener el id del usuario
+      var userTask = await this.getTasksFromTaskListsByUserId(userId);// Obtener tareas del usuario
+      this.setState({ items: userTask });// Establecer en state las actividades para que se presenten en la tabla de tareas
     }
   }
   public getTasksFromTaskListsByUserId = async (userId: number) => {
@@ -56,16 +54,11 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
         if (task.PercentComplete < 1 && task.AssignedToId[0] == userId)// Si esta completada y pertenece al usuario logueado
           taskByUserId.push(task)//Agregue todas las tareas que cumple la condicion al array creado
     var fin: any = (new Date());//Registrar finalizado del proceso
-    //console.log(taskByUserId);
     console.log("Finalizado Obtener Tareas Del Usuario:" + ((fin - inicio) / 1000) + "s"); // Mostrar duración de ejecución
-    return taskByUserId;
+    return taskByUserId;// Retorna las tareas del usuario
   }
   public render(): React.ReactElement<IGestorDeAusenciasProps, any> {
-    //console.log("render() de Gestor Ausencias" + new Date().toISOString());
-    const { description, isDarkTheme, hasTeamsContext, userDisplayName, context } = this.props;
-    this.props.context.component = this;
-    //const users = this.sp.web.siteUsers().then(r => { console.log("Usuarios Del Sitio:"); console.dir(r) });
-    //console.dir(this.props.user.email);
+    const { description, isDarkTheme, hasTeamsContext, userDisplayName, context } = this.props;//Establecen las propiedades del componente react
     return (
       <section className={`${styles.gestorDeAusencias} ${hasTeamsContext ? styles.teams : ''}`}>
         <div className={styles.welcome}>
@@ -74,40 +67,46 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
         <div>
           <h3>El presente formulario es el Gestor De Ausencias</h3>
           <p>Aquí usted delega actividades a otra persona en caso de ausentarse.</p>
-          <p><PeoplePicker
-            context={this.props.context} titleText="Persona a ausentar"
-            personSelectionLimit={1} showtooltip={false}
-            required={true} disabled={false}
+          <p><PeoplePicker context={this.props.context}
+            titleText="Persona a ausentar" personSelectionLimit={1}
+            showtooltip={false} required={true} disabled={false}
             onChange={this.getPeoplePickerItems} showHiddenInUI={false}
             principalTypes={[PrincipalType.User]} resolveDelay={1000} />
           </p>
-          <p><PeoplePicker
-            context={this.props.context} titleText="Persona a delegar actividades"
-            personSelectionLimit={1} showtooltip={false}
-            required={true} disabled={false}
-            onChange={this.getPeoplePickerItems} showHiddenInUI={false}
-            principalTypes={[PrincipalType.User]} resolveDelay={1000} />
+          <p><PeoplePicker context={this.props.context}
+            titleText="Persona a delegar actividades"
+            personSelectionLimit={1} showtooltip={false} required={true}
+            disabled={false} onChange={this.getPeoplePickerItems}
+            showHiddenInUI={false} principalTypes={[PrincipalType.User]}
+            resolveDelay={1000} />
           </p>
-          <DateTimePicker label="Fecha inicial de ausentismo" dateConvention={DateConvention.DateTime} timeConvention={TimeConvention.Hours12} />
-          <DateTimePicker label="Fecha final de ausentismo" dateConvention={DateConvention.DateTime} timeConvention={TimeConvention.Hours12} />
+          <DateTimePicker label="Fecha inicial de ausentismo"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours12} />
+          <DateTimePicker label="Fecha final de ausentismo"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours12} />
           <p>Actualmente Posee Las Siguientes Actividades Asignadas</p>
           <ListView items={this.state.items}
             viewFields={[
-              { name: "Title", displayName: "Actividad", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 },
-              { name: "List", displayName: "Lista", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 }
+              {
+                name: "Title", displayName: "Actividad",
+                isResizable: true, sorting: true, minWidth: 0, maxWidth: 150
+              },
+              {
+                name: "List", displayName: "Lista",
+                isResizable: true, sorting: true, minWidth: 0, maxWidth: 150
+              }
             ]}
             iconFieldName="ServerRelativeUrl" compact={true}
-            selectionMode={SelectionMode.multiple}
-            showFilter={true}
-            defaultFilter=""
-            filterPlaceHolder="Buscar..."
-            dragDropFiles={true}
+            selectionMode={SelectionMode.multiple} showFilter={true}
+            defaultFilter="" filterPlaceHolder="Buscar..."
+            dragDropFiles={true} stickyHeader={true}
             //groupByFields={groupByFields} 
             //selection={this._getSelection} 
             //onDrop={this._getDropFiles} 
             //className={styles.listWrapper} 
-            //listClassName={styles.list}
-            stickyHeader={true}
+            //listClassName={styles.list}            
           />
           <p>
             <button type="button">Guardar y Generar Ausencia</button>
