@@ -20,8 +20,15 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   }
   public async componentDidMount(): Promise<void> {//Se ejecuta después de que el componente react se monta o se muestra
     let groups = await this.sp.web.currentUser.groups();//Obtener grupos del usuario que inicio sesión
-    for (let group of groups) console.log("Grupo:" + group.Title); // Mostrar en consola los titulos de los grupos del usuario que inicio sesión
+    for (let group of groups) {
+      console.log("Grupo:" + group.Title); // Mostrar en consola los titulos de los grupos del usuario que inicio sesión
+      if(group.Title==""){
+        this.setState({showHidePeoplePickerAusente:true})
+      }
+    }
     var userId = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//obtiene el id del usuario de contexto instanciadose y ejecutandose en el acto
+    
+    this.setState({showHidePeoplePickerAusente:true})
     var userTask = await this.getTasksFromTaskListsByUserId(userId);//Obtener tareas del usuario
     this.setState({ items: userTask });//Establecer en state las actividades para que se presenten en la tabla de tareas
   }
@@ -99,12 +106,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
             iconFieldName="ServerRelativeUrl" compact={true}
             selectionMode={SelectionMode.multiple} showFilter={true}
             defaultFilter="" filterPlaceHolder="Buscar..."
-            dragDropFiles={true} stickyHeader={true}
-            //groupByFields={groupByFields} 
-            //selection={this._getSelection} 
-            //onDrop={this._getDropFiles} 
-            //className={styles.listWrapper} 
-            //listClassName={styles.list}            
+            dragDropFiles={true} stickyHeader={true}        
           />
           <p>
             <button type="button">Guardar y Generar Ausencia</button>
