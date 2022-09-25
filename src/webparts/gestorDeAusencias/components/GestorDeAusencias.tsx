@@ -2,36 +2,37 @@ import * as React from 'react';
 import styles from './GestorDeAusencias.module.scss';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { spfi, SPFx } from "@pnp/sp";
-import "@pnp/sp/webs";
-import "@pnp/sp/lists";
-import "@pnp/sp/items";
-import "@pnp/sp/site-users/web";
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+import "@pnp/sp/webs";//importamos el modulo de webs
+import "@pnp/sp/lists";//importamos el modulo de listas
+import "@pnp/sp/items";//importamos el modulo de items
+import "@pnp/sp/site-users/web";//importamos el modulo de usuarios
+import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';//importamos el modulo de llamadas de datos servicios web
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { ListView, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
 import { DateTimePicker, DateConvention, TimeConvention } from '@pnp/spfx-controls-react/lib/DateTimePicker';
-/** variable de agrupamientos*/
-const groupByFields: IGrouping[] = [{ name: "ListName", order: GroupOrder.ascending }];
 export default class GestorDeAusencias extends React.Component<any, any> {//Clase GestorDeAusencias que hereda de React.Component
   private sp = spfi().using(SPFx(this.props.context));//inicializa libreria pnpjs
   constructor(props: any) {
     super(props);//ejecuta el constructor de la clase padre
-    this.state = {showHidePeoplePickerAusente: false}//Estable la variable estado del componente    
+    this.state = { showHidePeoplePickerAusente: false }//Estable la variable estado del componente    
   }
   public async componentDidMount(): Promise<void> {//Se ejecuta después de que el componente react se monta o se muestra
-    let groups = await this.sp.web.currentUser.groups();//Obtener grupos del usuario que inicio sesión
-    for (let group of groups) {
+    console.log("componentDidMount");
+    var group = (await this.sp.web.currentUser.groups()).filter(g => g.Title == "Propietarios del sitio")[0];//Identifica si el usuario pertenece al grupo "Propietarios del sitio"
+    debugger;
+    /*let groups = await this.sp.web.currentUser.groups();//Obtener grupos del usuario que inicio sesión
+    for (let group of groups) {//Recorre los grupos del usuario
       console.log("Grupo:" + group.Title); // Mostrar en consola los titulos de los grupos del usuario que inicio sesión
-      if(group.Title==""){
-        this.setState({showHidePeoplePickerAusente:true})
-      }
-    }
+      debugger;//Pausa la ejecución del código
+      if (group.Title == "") {//Si el grupo es igual a "Gestor de Ausencias"
+        this.setState({ showHidePeoplePickerAusente: true }); //Muestra el PeoplePicker
+      }//Fin del if
+    }//Fin del for
+    */
     var userId = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//obtiene el id del usuario de contexto instanciadose y ejecutandose en el acto
-    
-    this.setState({showHidePeoplePickerAusente:true})
     var userTask = await this.getTasksFromTaskListsByUserId(userId);//Obtener tareas del usuario
-    this.setState({ items: userTask });//Establecer en state las actividades para que se presenten en la tabla de tareas
-  }
+    this.setState({ items: userTask });//Establecer en state las actividades para que se presenten en la tabla de tareas       
+  }//Fin del método componentDidMount
   private getPeoplePickerItems = async (items: any[]) => {//Obtiene los elementos del selector de personas
     this.setState({ items: [] });//Borra el listado de tareas del state y a su vez de la tabla de tareas que ve el usuario
     if (items.length >= 1) {//Validar que exista una persona seleccionada de
@@ -106,7 +107,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
             iconFieldName="ServerRelativeUrl" compact={true}
             selectionMode={SelectionMode.multiple} showFilter={true}
             defaultFilter="" filterPlaceHolder="Buscar..."
-            dragDropFiles={true} stickyHeader={true}        
+            dragDropFiles={true} stickyHeader={true}
           />
           <p>
             <button type="button">Guardar y Generar Ausencia</button>
