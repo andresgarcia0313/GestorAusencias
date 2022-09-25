@@ -1,6 +1,5 @@
 import * as React from 'react';
 import styles from './GestorDeAusencias.module.scss';
-import { IGestorDeAusenciasProps } from './IGestorDeAusenciasProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs";
@@ -9,16 +8,15 @@ import "@pnp/sp/items";
 import "@pnp/sp/site-users/web";
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
+import { ListView, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
 import { DateTimePicker, DateConvention, TimeConvention } from '@pnp/spfx-controls-react/lib/DateTimePicker';
 /** variable de agrupamientos*/
 const groupByFields: IGrouping[] = [{ name: "ListName", order: GroupOrder.ascending }];
-export default class GestorDeAusencias extends React.Component<IGestorDeAusenciasProps, any> {//Clase GestorDeAusencias que hereda de React.Component
+export default class GestorDeAusencias extends React.Component<any, any> {//Clase GestorDeAusencias que hereda de React.Component
   private sp = spfi().using(SPFx(this.props.context));//inicializa libreria pnpjs
-  constructor(props: IGestorDeAusenciasProps) {
+  constructor(props: any) {
     super(props);//ejecuta el constructor de la clase padre
-    this.state = {showHidePeoplePickerAusente: false}//Estable la variable estado del componente
-    
+    this.state = {showHidePeoplePickerAusente: false}//Estable la variable estado del componente    
   }
   public async componentDidMount(): Promise<void> {//Se ejecuta después de que el componente react se monta o se muestra
     let groups = await this.sp.web.currentUser.groups();//Obtener grupos del usuario que inicio sesión
@@ -57,7 +55,7 @@ export default class GestorDeAusencias extends React.Component<IGestorDeAusencia
     console.log("Finalizado Obtener Tareas Del Usuario:" + ((fin - inicio) / 1000) + "s"); // Mostrar duración de ejecución
     return taskByUserId;// Retorna las tareas del usuario
   }
-  public render(): React.ReactElement<IGestorDeAusenciasProps, any> {
+  public render(): React.ReactElement<any, any> {
     const { description, isDarkTheme, hasTeamsContext, userDisplayName, context } = this.props;//Establecen las propiedades del componente react
     return (
       <section className={`${styles.gestorDeAusencias} ${hasTeamsContext ? styles.teams : ''}`}>
