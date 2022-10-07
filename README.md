@@ -6,7 +6,7 @@ Short summary on functionality and used technologies.
 
 Cambiar versión de node de desarrollo
 
-nvm install 14.19.3; nvm use 14.19.3;npm install gulp-cli yo @microsoft/generator-sharepoint --global; gulp serve
+nvm install 14.19.3; nvm use 14.19.3;npm install gulp-cli yo @microsoft/generator-sharepoint --global; gulp serve;npm install gulp-cli --global;npm install yo --global;npm install @microsoft/generator-sharepoint --global
 
 # Volver De Otro Desarrollo
 
@@ -14,6 +14,12 @@ Abrir terminal con permisos de administrador y ejecute:
 
 1. nvm use 14.20.0
 2. npm run start
+
+# Quick dev
+
+Open PowerShell
+
+nvm install 14.20.0; nvm use 14.20.0;npm install gulp-cli yo @microsoft/generator-sharepoint --global
 
 ## Instalar ambiente de desarrollo
 
