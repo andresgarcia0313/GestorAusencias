@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "intellsmi.comment-translate",
-        "GitHub.copilot"
+        "github.copilot"
     ]
 }
