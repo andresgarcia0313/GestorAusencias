@@ -40,6 +40,13 @@ Windows
    npm install @microsoft/generator-sharepoint --global
 6. Instalar librerias del proyecto spfx desde command prompt, desde el directorio del código donde está el archivo package.json Ejecutamos:
    npm install
+   En caso de que aparezca error en el anterior es porque no estàs en la carpeta del aplicativo por ende debes ingresar con el comando:
+      
+      cd C:\dev\GestorAusencias
+      npm install
+
+      en mi caso esta es la carpeta C:\dev\GestorAusencias donde tengo el aplicativo para su escenario cambiar esta carpeta a donde tenga aplicativo
+      
 7. Instalar certificado de seguridad para conectarse con el espacio de trabajo online
    gulp trust-dev-cert
 

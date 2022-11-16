@@ -6,6 +6,7 @@
   "scripts": {
     "start": "gulp serve",
     "build": "gulp bundle",
+    "package": "gulp package-solution",
     "clean": "gulp clean",
     "test": "gulp test",
     "setssl": "gulp trust-dev-cert"

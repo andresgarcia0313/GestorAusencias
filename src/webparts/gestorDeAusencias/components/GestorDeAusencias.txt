@@ -26,8 +26,6 @@ import {
 } from '@pnp/spfx-controls-react/lib/DateTimePicker';//importamos el modulo de datetimepicker para seleccionar fechas
 export default class GestorDeAusencias extends React.Component<any, any> {//Clase Gestiornar Ausencias que sirve para crear el componente web y extiende de React.Component que es la clase base de react para crear componentes web y tiene dos parametros que son las propiedades y el estado
   private sp = spfi().using(SPFx(this.props.context));//Variable sp para poder usar las funciones de pnp y obtener los datos de sharepoint
-  protected ppl;
-  protected ppl1;
   constructor(props: any) { //Constructor de la clase para inicializar las variables para usarlas en la clase
     super(props); //Llamamos al constructor de la clase padre
     this.state = {//Estado inicial de la webpart
@@ -36,7 +34,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       showPeoplePickerAusente: false,//Mostrar people picker de ausente para el grupo de sharepoint de propietarios flujos de trabajo cts
       userIdAusente: null, //Id del usuario por ausentarse
       userIdDelegado: null, //Id del usuario a delegar actividades
-      loading: false,//Mostrar loading
     };
   }
   public async componentDidMount(): Promise<void> {//Funcion que se ejecuta cuando se carga la webpart y actualmente obtiene las tareas del usuario loqueado
@@ -66,34 +63,46 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       this.setState({ userIdDelegado: userIdDelegado });//Establecer en state el id del usuario ausente para que se presente en la tabla de tareas
     }
   }
-  //userid, columnas, filtro, 
+
   public getTasksFromTaskListsByUserId = async (userId: number) => {
-    this.setState({ loading: true });//Mostrar loading
-    let lt = [];//Lista de tareas global
-    const p = [];//Lista de promesas para obtener las tareas de las listas de tareas
-    for (let l of (await this.sp.web.lists.select("Title,ItemCount").filter("BaseTemplate eq 171")()))//Recorremos las listas de tareas para obtener las tareas de cada una
-      for (let i = 0; i < (Math.ceil(l.ItemCount / 1600)); i++)//Recorremos las paginas de las listas de tareas para obtener las tareas de cada pagina sin exceder el limite de 5000 items por consulta en este caso la dejamos de 1600
-        p.push(this.sp.web.lists.getByTitle(l.Title).items//Agregamos la consulta al listado de consultas para esperar y obtener las tareas de cada lista de forma paralela
-          .select("Id", "Title", "AssignedToStringId")//Seleccionamos los campos que se van a obtener
-          .filter(`AssignedToStringId eq ${userId} and PercentComplete lt 1 and Id ge ${i * 1600} and Id le ${(i * 1600) + 1600 - 1}`)//Filtramos las tareas por el id del usuario y que no esten completadas y que están en el rango de paginado
-          .getAll().then(r => { lt = lt.concat(r.map(r => ({ Id: r.Id, List: l.Title, Title: r.Title }))); }))//Agregamos las tareas a la lista de tareas global
-    await Promise.all(p);
-    this.setState({ loading: false });//Ocultar loading
-    return lt;
+    var inicio: any = (new Date()); //Obtener momento actual
+    var lists = (await this.props.context.spHttpClient.get(//Obtener listas de tareas
+      this.props.context.pageContext.web.absoluteUrl +//Url del sitio
+      `/_api/web/lists?$filter=(Hidden eq false) and (BaseTemplate eq 171)&$select=Title`,//Filtro para obtener solo las listas de tareas
+      SPHttpClient.configurations.v1)//Configuracion de la peticion
+      .then(async (r: SPHttpClientResponse) => {//Obtener respuesta de la peticion
+        return (await r.json()).value;//Obtener listas de tareas
+      }));//Obtener listas de tareas
+    var _taskLists: any[] = new Array();//Lista de tareas
+    for (let l of lists) _taskLists.push(this.sp.web.lists.getByTitle(l.Title).items.getAll());//Obtener tareas de cada lista de tareas
+    var taskLists = await Promise.all(_taskLists);//Obtener tareas de cada lista de tareas    
+    for (var i = 0; i < lists.length; i++)//Recorrer listas de tareas
+      for (var x = 0; x < taskLists.length; x++)//Recorrer tareas de cada lista de tareas
+        if (x == i)//Si el indice de la lista de tareas es igual al indice de las tareas de la lista de tareas
+          for (var task of taskLists[x])//Recorrer tareas de la lista de tareas
+            task.List = lists[i].Title;//Agregar propiedad de lista a la tarea
+    var taskByUserId: any[] = new Array();//Lista de tareas del usuario
+    for (var taskList of taskLists) for (var task of taskList)//Recorrer listas de tareas y tareas de cada lista de tareas
+      if (task.PercentComplete != 1 && task.AssignedToId[0] == userId)//Si la tarea no esta completada y el usuario es el asignado
+        taskByUserId.push(task);//Agregar tarea a la lista de tareas del usuario
+    var fin: any = (new Date());//Obtener momento actual
+    console.log("GetTasks: " + ((fin - inicio) / 1000) + "s");//Mostrar tiempo de ejecucion
+    return taskByUserId;//Retornar lista de tareas del usuario
   }
   //Funcion para obtener la lista de elementos seleccionados en la lista de tareas
-  private _getSelectionOfListView = (tasks: any[]) => { this.setState({ listSelectedViewTask: tasks }); }
+  private _getSelectionOfListView = (tasks: any[]) => {
+    this.setState({ listSelectedViewTask: tasks });
+  }
   public changeOwner = async () => {//metodo que cambia de propietario de la tarea por tarea, usuario ausente, usuario delegado
     try {
       var inicio: any = (new Date()); //Obtener momento de inicio      
-      if (this.state.peoplePickerAusente != undefined)//Validar que exista una persona seleccionada en el people picker de ausente
-        var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.state.peoplePickerAusente[0].secondaryText)()).Id;//Obtener el id del usuario ausente
-      else var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//Obtener el id del usuario ausente
+      if (this.state.peoplePickerAusente != undefined)
+        var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.state.peoplePickerAusente[0].secondaryText)()).Id;
+      else
+        var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;
       var tasksToChangeOwner: any[] = new Array();//declarar array de promesas de cambio de propietario de tarea 
       for (var task of this.state.listSelectedViewTask) //Recorre las tareas seleccionadas para cambiar de propietario
-        tasksToChangeOwner[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id).update(
-          { AssignedToId: [this.state.userIdDelegado], }
-        );//Cambia el propietario de la tarea
+        tasksToChangeOwner[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id).update({ AssignedToId: [this.state.userIdDelegado], });//Cambia el propietario de la tarea
       await Promise.all(tasksToChangeOwner);//Espera a que se resuelvan todas las promesas de cambio de propietario de tarea para continuar
       var tasks = await this.getTasksFromTaskListsByUserId(userIdAusente);//Obtenemos las tareas del usuario que esta logueado
       this.setState({ listViewTask: [] });//Guardamos las tareas en el estado
@@ -134,12 +143,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         Inicio: inicio,//Fecha de inicio de la ausencia
         Fin: fin//Fecha de fin de la ausencia
       }
-      /*this.ppl.state.selectedPersons = [];
-      this.ppl.onChange([]);
-      this.ppl1.state.selectedPersons = [];
-      this.ppl1.onChange([]);*/
       await this.sp.web.lists.getByTitle("ListForDelegationOfAbsences").items.add(reg);//Agregar registro a la lista de ausencias
-      alert("Ausencia Guardada puede continuar delegando");//Mensaje de ausencia guardada
     } catch (e) { console.log(e); }//Captura errores
   }
   public render(): React.ReactElement<any, any> {//Renderiza el componente
@@ -163,39 +167,39 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
               personSelectionLimit={1} showtooltip={false} required={true}
               disabled={false} onChange={this.getPeoplePickerItemsAusente}
               showHiddenInUI={true} principalTypes={[PrincipalType.User]}
-              resolveDelay={50} ref={c => (this.ppl = c)} /> </p>
+              resolveDelay={50} /> </p>
             : ""}
           <p><PeoplePicker context={this.props.context}
             placeholder="Persona a delegarle las actividades..."
             personSelectionLimit={1} showtooltip={false} required={true}
             disabled={false} onChange={this.getPeoplePickerItemsDelegado}
             showHiddenInUI={false} principalTypes={[PrincipalType.User]}
-            resolveDelay={50} ref={c => (this.ppl1 = c)} /></p>
+            resolveDelay={50} /></p>
           <p>Actividades</p>
-          {this.state.loading == false ?
-            <ListView
-              viewFields={[
-                { name: "Title", displayName: "Actividad", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 },
-                { name: "List", displayName: "Lista de tarea", isResizable: true, sorting: true, minWidth: 0, maxWidth: 150 }
-              ]}
-              filterPlaceHolder="Busque lista o actividad..."
-              selection={this._getSelectionOfListView}
-              selectionMode={SelectionMode.multiple}
-              iconFieldName="ServerRelativeUrl" items={this.state.listViewTask}
-              dragDropFiles={false} stickyHeader={true}
-              showFilter={true} defaultFilter="" compact={false}
-            /> :
-            "Cargando datos..."
-          }
+          <ListView
+            viewFields={[{
+              name: "Title", displayName: "Actividad", isResizable: true,
+              sorting: true, minWidth: 0, maxWidth: 150
+            }, {
+              name: "List", displayName: "Lista de tarea", isResizable: true,
+              sorting: true, minWidth: 0, maxWidth: 150
+            }]}
+            filterPlaceHolder="Busque lista o actividad..."
+            selection={this._getSelectionOfListView}
+            selectionMode={SelectionMode.multiple}
+            iconFieldName="ServerRelativeUrl" items={this.state.listViewTask}
+            dragDropFiles={false} stickyHeader={true}
+            showFilter={true} defaultFilter="" compact={false} />
           <p>
-            <button type="button" onClick={this.changeOwner}>Delegar Actividades</button>
+            <button type="button" onClick={this.changeOwner}>
+              Delegar Actividades</button>
           </p>
         </div>
       </section>
     );
     var url = window.location.href;//Obtiene la url actual
     var urlblock = "https://carvajal.sharepoint.com/sites/flujosprocesos";//url a bloquear la visualización del componente
-
+    
     if (url == urlblock) jsx = (<div></div>);//Si la url actual es igual a la url a bloquear entonces no se muestra el componente pero muestra un campo vacio
     return jsx;
   }
