@@ -108,7 +108,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       );
       this.PeoplePickerDelegado.state.selectedPersons = [];//Borra el people picker de delegado
       this.PeoplePickerDelegado.onChange([]);//Borra el people picker de delegado
-
       var conteoActividadesPorDelegar = (await this.getTasksFromTaskListsByUserId(this.state.userIdAusente)).length;//Obtiene el numero de actividades por delegar
       console.log("Actividades por delegar: " + conteoActividadesPorDelegar);
       if (conteoActividadesPorDelegar == 0) {
@@ -123,7 +122,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       } else {
         alert("Existen " + conteoActividadesPorDelegar + " actividades por delegar");
       }
-
     } catch (e) { console.log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
@@ -209,8 +207,8 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       </section>
     );
     var url = window.location.href;//Obtiene la url actual
-    var urlblock = "https://carvajal.sharepoint.com/sites/flujosprocesos";//url a bloquear la visualización del componente
-    if (url == urlblock) jsx = (<div></div>);//Si la url actual es igual a la url a bloquear entonces no se muestra el componente pero muestra un campo vacio
+    if (url == "https://carvajal.sharepoint.com/sites/flujosprocesos" || url == "https://carvajal.sharepoint.com/sites/flujosprocesos/")
+      jsx = (<div></div>);//Si la url actual es igual a la url a bloquear entonces no se muestra el componente pero muestra un campo vacio
     return jsx;
   }
 }
