@@ -9,7 +9,8 @@
     "package": "gulp package-solution",
     "clean": "gulp clean",
     "test": "gulp test",
-    "setssl": "gulp trust-dev-cert"
+    "setssl": "gulp trust-dev-cert",
+    "compile": "npm install && gulp bundle --ship && gulp package-solution --ship"
   },
   "dependencies": {
     "@fluentui/react": "8.68.2",
