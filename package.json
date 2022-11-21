@@ -10,7 +10,10 @@
     "clean": "gulp clean",
     "test": "gulp test",
     "setssl": "gulp trust-dev-cert",
-    "compile": "npm install && gulp bundle --ship && gulp package-solution --ship"
+    "installNode": "nvm install 14.20.0 && nvm use 14.20.0",
+    "installSharepoint": "npm i gulp-cli yo @microsoft/generator-sharepoint --global",
+    "installLibraries": "npm install",
+    "compile": "gulp clean && gulp bundle --ship && gulp package-solution --ship"
   },
   "dependencies": {
     "@fluentui/react": "8.68.2",
