@@ -108,7 +108,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         if (this.state.startDate == undefined || this.state.endDate == undefined) {
           alert("Sin fechas, para delegar actividades futuras elige fechas y delega nuevamente");
         } else {
-          alert("Las actividades futuras se reasignadas al delegado");
+          alert("Las actividades futuras se reasignaran al delegado");
           this.saveAbsence();
         }
       } else {
