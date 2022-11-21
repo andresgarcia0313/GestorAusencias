@@ -24,7 +24,8 @@ import {
   DateConvention,//Importamos la convencion de fecha para que se muestre la fecha en el formato que queramos
   TimeConvention//Importamos la convencion de hora para que se muestre la hora en el formato que queramos
 } from '@pnp/spfx-controls-react/lib/DateTimePicker';//importamos el modulo de datetimepicker para seleccionar fechas
-import { PopupWindowPosition } from '@microsoft/sp-property-pane';
+//import { PopupWindowPosition } from '@microsoft/sp-property-pane';
+var log = console.log;//creamos una variable para hacer console.log mas corto
 export default class GestorDeAusencias extends React.Component<any, any> {//Clase Gestiornar Ausencias que sirve para crear el componente web y extiende de React.Component que es la clase base de react para crear componentes web y tiene dos parametros que son las propiedades y el estado
   private sp = spfi().using(SPFx(this.props.context));//Variable sp para poder usar las funciones de pnp y obtener los datos de sharepoint
   private PeoplePickerDelegado;
@@ -68,7 +69,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   }
   //userid, columnas, filtro, 
   public getTasksFromTaskListsByUserId = async (userId: number) => {
-    console.log("Obteniendo tareas del usuario con id: " + userId);
+    log("Obteniendo tareas del usuario con id: " + userId);
     this.setState({ loading: true });//Mostrar loading
     let listTasks = [];//Lista de tareas global
     const promesas = [];//Lista de promesas para obtener las tareas de las listas de tareas
@@ -89,44 +90,35 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       if (this.state.peoplePickerAusente != undefined) {//Validar que exista una persona seleccionada en el people picker de ausente
         var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.state.peoplePickerAusente[0].secondaryText)()).Id;//Obtener el id del usuario ausente
         this.setState({ userIdAusente: userIdAusente });//Establecer en state el id del usuario ausente para que se presente en la tabla de tareas
-      }
-      else //Si no existe una persona seleccionada en el people picker de ausente se toma el id del usuario que esta logueado
-      {
+      } else { //Si no existe una persona seleccionada en el people picker de ausente se toma el id del usuario que esta logueado
         var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//Obtener el id del usuario ausente que esta logueado
         this.setState({ userIdAusente: userIdAusente });
       }
-
+      log("Ausente: " + this.state.userIdAusente);
       var promisesUpdate: any[] = new Array();//declarar array de promesas de cambio de propietario de tarea 
       for (var task of this.state.listSelectedViewTask) //Recorre las tareas seleccionadas para cambiar de propietario
         promisesUpdate[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id)
           .update({ AssignedToId: [this.state.userIdDelegado] });
       await Promise.all(promisesUpdate);//Espera a que se resuelvan todas las promesas de cambio de propietario de tarea para continuar
-
-      this.setState({ listViewTask: [] })//Borra el listado de tareas del state y a su vez de la tabla de tareas que ve el usuario
-      this.getTasksFromTaskListsByUserId(this.state.userIdAusente).then(
-        (t) => { this.setState({ listViewTask: [] }); this.setState({ listViewTask: t }); }
-      );
-      this.PeoplePickerDelegado.state.selectedPersons = [];//Borra el people picker de delegado
-      this.PeoplePickerDelegado.onChange([]);//Borra el people picker de delegado
-      var conteoActividadesPorDelegar = (await this.getTasksFromTaskListsByUserId(this.state.userIdAusente)).length;//Obtiene el numero de actividades por delegar
-      console.log("Actividades por delegar: " + conteoActividadesPorDelegar);
-      if (conteoActividadesPorDelegar == 0) {
-        alert("No hay actividades por delegar para el usuario " + this.state.peoplePickerAusente[0].secondaryText);
-        //Si el usuario no eligio fechas para el reporte se le informa que debe elegir fechas si quiere delegación temporal automatica
-        if (this.state.startDate == undefined || this.state.endDate == undefined)
-          alert("No elegiste fechas y por ende no delegaste actividades futuras, si quieres delegar actividades futuras debes elegir fechas y guardar nuevamente");
-        else {//Si el usuario eligio fechas para el reporte se le informa que debe elegir fechas si quiere delegación temporal automatica
-          alert("Las actividades nuevas del ausente serán reasignadas a la ultima persona delegada escogida");
-          this.saveAbsence();//Guarda la ausencia del usuario
+      alert("Se ha cambiado el propietario de las tareas seleccionadas");
+      this.setState({ listViewTask: [] })//Limpiar tabla de tareas
+      var actividades = await this.getTasksFromTaskListsByUserId(this.state.userIdAusente).then((t) => { this.setState({ listViewTask: [] }); this.setState({ listViewTask: t }); return t; });//Obtener las tareas del usuario ausente y establecer en state las actividades para que se presenten en la tabla de tareas
+      if (actividades.length == 0) {
+        alert("Sin actividades por delegar");
+        if (this.state.startDate == undefined || this.state.endDate == undefined) {
+          alert("Sin fechas, para delegar actividades futuras elige fechas y delega nuevamente");
+        } else {
+          alert("Las actividades futuras se reasignadas al delegado");
+          this.saveAbsence();
         }
       } else {
-        alert("Existen " + conteoActividadesPorDelegar + " actividades por delegar");
+        alert("Existen " + actividades.length + " actividades por delegar");
       }
-    } catch (e) { console.log(e); }//Captura errores
+    } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
     try {
-      console.log("changeOwnerOfCurrentAbsenceTasks");
+      log("changeOwnerOfCurrentAbsenceTasks");
       for (let item of (await this.sp.web.lists.getByTitle("ListForDelegationOfAbsences").items())) {//Recorre las ausencias para obtener las tareas de los usuarios ausentes
         if ((new Date(item.Inicio)) < (new Date()) && (new Date()) < (new Date(item.Fin))) {//Si la fecha de inicio de la ausencia es menor a la fecha actual y es menor a la fecha de fin de la ausencia entonces es una ausencia actual que se esta presentando
           this.getTasksFromTaskListsByUserId(item.AusenteId).then(//Obtiene las tareas del usuario ausente para cambiar el propietario de las tareas
@@ -138,8 +130,8 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
           );
         }
       }
-      console.log("Finalizado changeOwnerOfCurrentAbsenceTasks");
-    } catch (e) { console.log(e); }//Captura errores
+      log("Finalizado changeOwnerOfCurrentAbsenceTasks");
+    } catch (e) { log(e); }//Captura errores
   }
   //funcion para guardar en la lista de ListForDelegationOfAbsences los datos de persona ausente, persona delegada, fecha de ausencia y fecha de regreso
   public saveAbsence = async () => {
@@ -152,7 +144,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         Inicio: this.state.startDate.toISOString(),//Fecha de inicio de la ausencia
         Fin: this.state.endDate.toISOString()//Fecha de fin de la ausencia
       });
-    } catch (e) { console.log(e); }//Captura errores
+    } catch (e) { log(e); }//Captura errores
 
   }
   public render(): React.ReactElement<any, any> {//Renderiza el componente
