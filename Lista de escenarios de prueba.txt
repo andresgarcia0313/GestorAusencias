@@ -1,7 +1,12 @@
-1. Cambiar todas las tareas sin fechas.
-2. Cambiar unas tareas con fechas.
+1. Cambiar unas tareas sin fechas con usuario no administrativo y  las tareas restantes deben ser del logueo
+
+2. Cambiar todas las tareas sin fechas.
+    2.1 Realizar con un guardado previo de cambio de una o más actividades y sin cambiar el usuario a delgar en el anterior guardado
+    2.2 Cambiar todas eligiendo una vez el usuario 
 3. Cambiar todas las tareas con fechas.
 4. Administrador cambia todas las tareas con los dos roles diferentes a el mismo.
 5. Administrador cambia algunas tareas con roles diferentes a el.
 6. Cambio automatico de actividades futuras.
 7. Usuario final Cambio de 2 actividades de usuario sin fecha.
+8. Administrador elige dos personas diferentes a el y cambia de ausente a delegado sin elegir ninguna tarea por no tiene tareas actuales
+10. validar cuando no se selecciona usuario a delegar

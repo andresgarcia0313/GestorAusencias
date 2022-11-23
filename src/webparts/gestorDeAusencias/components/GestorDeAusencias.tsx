@@ -87,26 +87,22 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   private _getSelectionOfListView = (tasks: any[]) => { this.setState({ listSelectedViewTask: tasks }); }
   public changeOwner = async () => {//metodo que cambia de propietario de la tarea por tarea, usuario ausente, usuario delegado
     try {
-      if (this.state.peoplePickerAusente != undefined) {//Validar que exista una persona seleccionada en el people picker de ausente
-        var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.state.peoplePickerAusente[0].secondaryText)()).Id;//Obtener el id del usuario ausente
-        this.setState({ userIdAusente: userIdAusente });//Establecer en state el id del usuario ausente para que se presente en la tabla de tareas
-      } else { //Si no existe una persona seleccionada en el people picker de ausente se toma el id del usuario que esta logueado
-        var userIdAusente = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//Obtener el id del usuario ausente que esta logueado
-        this.setState({ userIdAusente: userIdAusente });
-      }
-      log("Ausente: " + this.state.userIdAusente);
+      if (this.state.userIdDelegado == null) alert("Debe seleccionar persona a delegar actividades");
+      if (this.state.userIdAusente == null) this.setState({ userIdAusente: (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id });
+      
       var promisesUpdate: any[] = new Array();//declarar array de promesas de cambio de propietario de tarea 
       for (var task of this.state.listSelectedViewTask) //Recorre las tareas seleccionadas para cambiar de propietario
         promisesUpdate[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id)
           .update({ AssignedToId: [this.state.userIdDelegado] });
       await Promise.all(promisesUpdate);//Espera a que se resuelvan todas las promesas de cambio de propietario de tarea para continuar
-      alert("Se ha cambiado el propietario de las tareas seleccionadas");
+      //si promisesUpdate tiene alguna promesa muestre mensaje de tareas cambiadas
+      if (promisesUpdate.length > 0) { alert("Se ha cambiado el propietario de las tareas seleccionadas") }
       this.setState({ listViewTask: [] })//Limpiar tabla de tareas
       var actividades = await this.getTasksFromTaskListsByUserId(this.state.userIdAusente).then((t) => { this.setState({ listViewTask: [] }); this.setState({ listViewTask: t }); return t; });//Obtener las tareas del usuario ausente y establecer en state las actividades para que se presenten en la tabla de tareas
       if (actividades.length == 0) {
         alert("Sin actividades por delegar");
         if (this.state.startDate == undefined || this.state.endDate == undefined) {
-          alert("Sin fechas, para delegar actividades futuras elige fechas y delega nuevamente");
+          alert("Sin fechas, para delegar actividades futuras elige fechas y delega nuevamente en especial para vacaciones");
         } else {
           alert("Las actividades futuras se reasignaran al delegado");
           this.saveAbsence();
@@ -114,6 +110,8 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       } else {
         alert("Existen " + actividades.length + " actividades por delegar");
       }
+      //actualizar la web
+      window.location.reload();
     } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
