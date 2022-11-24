@@ -41,8 +41,10 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
     };
   }
   public async componentDidMount(): Promise<void> {//Funcion que se ejecuta cuando se carga la webpart y actualmente obtiene las tareas del usuario loqueado
+    var group;
     var groups = await this.sp.web.currentUser.groups();//Obtenemos los grupos del usuario actual
-    var group: any = groups.filter(g => g.Title == "Propietarios Flujos de Trabajo CTS")[0];//Filtramos el grupo de propietarios de flujos de trabajo
+    group = groups.filter(g => g.Title == "Propietarios Flujos de Trabajo CTS")[0];
+    if (group == undefined) group = groups.filter(g => g.Title == "Propietarios Flujos de trabajo CTS MX")[0];
     if (group != undefined) this.setState({ showPeoplePickerAusente: true });//Si el usuario pertenece al grupo de propietarios de flujos de trabajo se muestra el people picker
     var userId = (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id;//Obtenemos el id del usuario que esta logueado
     this.setState({ userIdAusente: userId });//Guardamos el id de la persona a ausentar en el estado
@@ -53,12 +55,17 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   private setStartDate = async (date: Date) => { this.setState({ startDate: date }); };
   private setEndDate = async (date: Date) => { this.setState({ endDate: date }); };
   private getPeoplePickerItemsAusente = async (items: any[]) => {//Obtiene la persona a ausentar  y se ejecuta cuando se selecciona un usuario en el people picker de ausente
+    console.log("Personas que llegan cuando eligo el ausente");
+    console.dir(items);
     this.setState({ listViewTask: [] });//Borra el listado de tareas del state y a su vez de la tabla de tareas que ve el usuario
     if (items.length > 0) {//Validar que exista una persona seleccionada de
       var userIdAusente = (await this.sp.web.siteUsers.getByEmail(items[0].secondaryText)()).Id//obtener el id del usuario
       var tasksAusente = await this.getTasksFromTaskListsByUserId(userIdAusente);// Obtener tareas del usuario
       this.setState({ userIdAusente: userIdAusente });//Guardamos el id de la persona a ausentar en el estado
       this.setState({ listViewTask: tasksAusente });// Establecer en state las actividades para que se presenten en la tabla de tareas
+    }
+    else {
+      alert("Persona no se ha podido consultar no selecciono persona o si esta seleccionada por favor actualice la página con Ctrl+F5");
     }
   }
   private getPeoplePickerItemsDelegado = async (items: any[]) => {//Obtiene la persona a delegar actividades y se ejecuta cuando se selecciona un usuario en el people picker de delegado
@@ -69,7 +76,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   }
   //userid, columnas, filtro, 
   public getTasksFromTaskListsByUserId = async (userId: number) => {
-    log("Obteniendo tareas del usuario con id: " + userId);
+    log("Obteniendo tareas del usuario con id: " + userId + "Para consultarlas o mostrarlas en la tabla");
     this.setState({ loading: true });//Mostrar loading
     let listTasks = [];//Lista de tareas global
     const promesas = [];//Lista de promesas para obtener las tareas de las listas de tareas
@@ -78,8 +85,17 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         promesas.push(this.sp.web.lists.getByTitle(l.Title).items//Agregamos la consulta al listado de consultas para esperar y obtener las tareas de cada lista de forma paralela
           .select("Id", "Title", "AssignedToStringId")//Seleccionamos los campos que se van a obtener
           .filter(`AssignedToStringId eq ${userId} and PercentComplete lt 1 and Id ge ${i * 1600} and Id le ${(i * 1600) + 1600 - 1}`)//Filtramos las tareas por el id del usuario y que no esten completadas y que están en el rango de paginado
-          .getAll().then(r => { listTasks = listTasks.concat(r.map(r => ({ Id: r.Id, List: l.Title, Title: r.Title }))); }))//Agregamos las tareas a la lista de tareas global
+          .getAll().then(
+            r => {
+              listTasks = listTasks.concat(r.map(r => ({
+                Id: r.Id,
+                List: l.Title,
+                Title: r.Title
+              })));
+            }))//Agregamos las tareas a la lista de tareas global
     await Promise.all(promesas);
+    console.log("Tareas obtenidas y capturadas ya sea para enviarlas o mostrarlas en la tabla");
+    console.dir(listTasks);
     this.setState({ loading: false });//Ocultar loading
     return listTasks;
   }
@@ -87,9 +103,10 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   private _getSelectionOfListView = (tasks: any[]) => { this.setState({ listSelectedViewTask: tasks }); }
   public changeOwner = async () => {//metodo que cambia de propietario de la tarea por tarea, usuario ausente, usuario delegado
     try {
+      //valide que se haya seleccionado una persona a ausentar
       if (this.state.userIdDelegado == null) alert("Debe seleccionar persona a delegar actividades");
+      //Si no tiene persona seleccionada asigne la que esta autenticada
       if (this.state.userIdAusente == null) this.setState({ userIdAusente: (await this.sp.web.siteUsers.getByEmail(this.props.user.email)()).Id });
-      
       var promisesUpdate: any[] = new Array();//declarar array de promesas de cambio de propietario de tarea 
       for (var task of this.state.listSelectedViewTask) //Recorre las tareas seleccionadas para cambiar de propietario
         promisesUpdate[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id)
@@ -111,12 +128,12 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         alert("Existen " + actividades.length + " actividades por delegar");
       }
       //actualizar la web
-      window.location.reload();
+      window.location.href = window.location.href;
     } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
     try {
-      log("changeOwnerOfCurrentAbsenceTasks");
+      log("Cambiando propietario de tareas de ausencia");
       for (let item of (await this.sp.web.lists.getByTitle("ListForDelegationOfAbsences").items())) {//Recorre las ausencias para obtener las tareas de los usuarios ausentes
         if ((new Date(item.Inicio)) < (new Date()) && (new Date()) < (new Date(item.Fin))) {//Si la fecha de inicio de la ausencia es menor a la fecha actual y es menor a la fecha de fin de la ausencia entonces es una ausencia actual que se esta presentando
           this.getTasksFromTaskListsByUserId(item.AusenteId).then(//Obtiene las tareas del usuario ausente para cambiar el propietario de las tareas
@@ -128,7 +145,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
           );
         }
       }
-      log("Finalizado changeOwnerOfCurrentAbsenceTasks");
+      log("Finalizado Cambiando propietario de tareas de ausencia");
     } catch (e) { log(e); }//Captura errores
   }
   //funcion para guardar en la lista de ListForDelegationOfAbsences los datos de persona ausente, persona delegada, fecha de ausencia y fecha de regreso
@@ -197,7 +214,12 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       </section>
     );
     var url = window.location.href;//Obtiene la url actual
-    if (url == "https://carvajal.sharepoint.com/sites/flujosprocesos" || url == "https://carvajal.sharepoint.com/sites/flujosprocesos/")
+    if (
+      url == "https://carvajal.sharepoint.com/sites/flujosprocesos" ||
+      url == "https://carvajal.sharepoint.com/sites/flujosprocesos/" ||
+      url == "https://carvajal.sharepoint.com/sites/FlujosdetrabajoCTSMX" ||
+      url == "https://carvajal.sharepoint.com/sites/FlujosdetrabajoCTSMX/"
+    )
       jsx = (<div></div>);//Si la url actual es igual a la url a bloquear entonces no se muestra el componente pero muestra un campo vacio
     return jsx;
   }
