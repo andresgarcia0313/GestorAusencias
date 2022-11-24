@@ -128,7 +128,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         alert("Existen " + actividades.length + " actividades por delegar");
       }
       //actualizar la web
-      window.location.href = window.location.href;
+      
     } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
@@ -159,6 +159,10 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         Inicio: this.state.startDate.toISOString(),//Fecha de inicio de la ausencia
         Fin: this.state.endDate.toISOString()//Fecha de fin de la ausencia
       });
+      setTimeout(()=>{
+        window.location.href = window.location.href;
+      },2000);
+      
     } catch (e) { log(e); }//Captura errores
 
   }
