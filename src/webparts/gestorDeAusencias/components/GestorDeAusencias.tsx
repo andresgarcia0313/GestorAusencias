@@ -218,7 +218,8 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       url == "https://carvajal.sharepoint.com/sites/flujosprocesos" ||
       url == "https://carvajal.sharepoint.com/sites/flujosprocesos/" ||
       url == "https://carvajal.sharepoint.com/sites/FlujosdetrabajoCTSMX" ||
-      url == "https://carvajal.sharepoint.com/sites/FlujosdetrabajoCTSMX/"
+      url == "https://carvajal.sharepoint.com/sites/FlujosdetrabajoCTSMX/" ||
+      url == "https://carvajal.sharepoint.com/sites/flujosprocesos/SitePages/Tareas.aspx" 
     )
       jsx = (<div></div>);//Si la url actual es igual a la url a bloquear entonces no se muestra el componente pero muestra un campo vacio
     return jsx;
