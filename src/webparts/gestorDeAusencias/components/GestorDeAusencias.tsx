@@ -121,7 +121,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         promisesUpdate[task.Id] = this.sp.web.lists.getByTitle(task.List).items.getById(task.Id)
           .update({ AssignedToId: [this.state.userIdDelegado] });
       await Promise.all(promisesUpdate);//Espera a que se resuelvan todas las promesas de cambio de propietario de tarea para continuar
-      //si promisesUpdate tiene alguna promesa muestre mensaje de tareas cambiadas
       if (promisesUpdate.length > 0) { alert("Se ha cambiado el propietario de las tareas seleccionadas") }
       this.setState({ listViewTask: [] })//Limpiar tabla de tareas
       var actividades = await this.getTasksFromTaskListsByUserId(this.state.userIdAusente).then((t) => { this.setState({ listViewTask: [] }); this.setState({ listViewTask: t }); return t; });//Obtener las tareas del usuario ausente y establecer en state las actividades para que se presenten en la tabla de tareas
@@ -156,7 +155,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       log("ListForDelegationOfAbsences Finalizado Cambiando propietario de tareas de ausencia");
     } catch (e) { log(e); }//Captura errores
   }
-  //funcion para guardar en la lista de ListForDelegationOfAbsences los datos de persona ausente, persona delegada, fecha de ausencia y fecha de regreso
   public saveAbsence = async () => {
     try {
       await this.sp.web.lists.getByTitle("ListForDelegationOfAbsences").items.add({//Objeto con los datos de la ausencia
