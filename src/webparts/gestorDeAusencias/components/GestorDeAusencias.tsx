@@ -42,6 +42,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
     };
   }
   public async componentDidMount(): Promise<void> {//Funcion que se ejecuta cuando se carga la webpart y actualmente obtiene las tareas del usuario loqueado
+    log("Aplicación Iniciada");
     var group;
     var groups = await this.sp.web.currentUser.groups();//Obtenemos los grupos del usuario actual
     group = groups.filter(g => g.Title == "Propietarios Flujos de Trabajo CTS")[0];
@@ -51,6 +52,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
     this.setState({ userIdAusente: userId });//Guardamos el id de la persona a ausentar en el estado
     var tasks = await this.getTasksFromTaskListsByUserId(userId);//Obtenemos las tareas del usuario que esta logueado
     this.setState({ listViewTask: tasks });//Guardamos las tareas en el estado
+    log("Aplicación Cargada");
     this.changeOwnerOfCurrentAbsenceTasks();
   }
   private setStartDate = async (date: Date) => { this.setState({ startDate: date }); };
@@ -82,22 +84,24 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
     this.setState({ loading: true });//Mostrar loading
     let listTasks = [];//Lista de tareas global
     const promesas = [];//Lista de promesas para obtener las tareas de las listas de tareas
-    for (let l of (await this.sp.web.lists.select("Title,ItemCount").filter("BaseTemplate eq 171")()))//Recorremos las listas de tareas para obtener las tareas de cada una
-      for (let i = 0; i < (Math.ceil(l.ItemCount / 1600)); i++)//Recorremos las paginas de las listas de tareas para obtener las tareas de cada pagina sin exceder el limite de 5000 items por consulta en este caso la dejamos de 1600
-        promesas.push(this.sp.web.lists.getByTitle(l.Title).items//Agregamos la consulta al listado de consultas para esperar y obtener las tareas de cada lista de forma paralela
-          .select("Id", "Title", "AssignedToStringId")//Seleccionamos los campos que se van a obtener
-          .filter(`AssignedToStringId eq ${userId} and PercentComplete lt 1 and Id ge ${i * 1600} and Id le ${(i * 1600) + 1600 - 1}`)//Filtramos las tareas por el id del usuario y que no esten completadas y que están en el rango de paginado
-          .getAll().then(
-            r => {
-              listTasks = listTasks.concat(r.map(r => ({
-                Id: r.Id,
-                List: l.Title,
-                Title: r.Title
-              })));
-            }))//Agregamos las tareas a la lista de tareas global
-    await Promise.all(promesas);
+    for (let list of (await this.sp.web.lists.select("Title,ItemCount").filter("BaseTemplate eq 171")())) {//Recorremos las listas de tareas para obtener las tareas de cada una      
+      promesas.push(this.sp.web.lists.getByTitle(list.Title).items
+        .select("Id", "Title", "AssignedToStringId")
+        .filter(`AssignedToStringId eq ${userId} and PercentComplete lt 1`)
+        .getAll().then(r => {
+          listTasks = listTasks.concat(r.map(r => ({
+            Id: r.Id, List: list.Title, Title: r.Title
+          })))
+          if (r.length > 0) {
+            let endList = new Date();
+            var time = (endList.getTime() - start.getTime()) / 1000;
+            log(`Obtenida en ${time}seg Lista ${list.Title} con ${r.length} tareas`);
+          }
+        }));
+    }
+    await Promise.all(promesas).catch(reason => { alert("Sharepoint no devuelve datos por favor intente en 1 minuto"); });
     var end = new Date();
-    var time = end.getTime() - start.getTime() / 1000;
+    var time = (end.getTime() - start.getTime()) / 1000;
     log(`Consultadas las tareas en ${time} s del usuario ${userId}`);
     console.dir(listTasks);
     this.setState({ loading: false });//Ocultar loading
@@ -133,8 +137,6 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         alert("Existen " + actividades.length + " actividades por delegar");
       }
       this.setState({ savemsg: false });
-      //actualizar la web
-
     } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
