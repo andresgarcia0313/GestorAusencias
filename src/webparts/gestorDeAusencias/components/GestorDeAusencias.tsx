@@ -38,6 +38,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       userIdAusente: null, //Id del usuario por ausentarse
       userIdDelegado: null, //Id del usuario a delegar actividades
       loading: false,//Mostrar loading
+      savemsg: false//Mostrar mensaje de guardado      
     };
   }
   public async componentDidMount(): Promise<void> {//Funcion que se ejecuta cuando se carga la webpart y actualmente obtiene las tareas del usuario loqueado
@@ -65,7 +66,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       this.setState({ listViewTask: tasksAusente });// Establecer en state las actividades para que se presenten en la tabla de tareas
     }
     else {
-      alert("Persona no se ha podido consultar no selecciono persona o si esta seleccionada por favor actualice la página con Ctrl+F5");
+      log("Persona no se ha podido consultar no selecciono persona o si esta seleccionada por favor actualice la página con Ctrl+F5");
     }
   }
   private getPeoplePickerItemsDelegado = async (items: any[]) => {//Obtiene la persona a delegar actividades y se ejecuta cuando se selecciona un usuario en el people picker de delegado
@@ -76,7 +77,8 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   }
   //userid, columnas, filtro, 
   public getTasksFromTaskListsByUserId = async (userId: number) => {
-    log("Obteniendo tareas del usuario con id: " + userId + "Para consultarlas o mostrarlas en la tabla");
+    //Obtener tiempo inicial
+    var start = new Date();
     this.setState({ loading: true });//Mostrar loading
     let listTasks = [];//Lista de tareas global
     const promesas = [];//Lista de promesas para obtener las tareas de las listas de tareas
@@ -94,7 +96,9 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
               })));
             }))//Agregamos las tareas a la lista de tareas global
     await Promise.all(promesas);
-    console.log("Tareas obtenidas y capturadas ya sea para enviarlas o mostrarlas en la tabla");
+    var end = new Date();
+    var time = end.getTime() - start.getTime() / 1000;
+    log(`Consultadas las tareas en ${time} s del usuario ${userId}`);
     console.dir(listTasks);
     this.setState({ loading: false });//Ocultar loading
     return listTasks;
@@ -103,6 +107,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
   private _getSelectionOfListView = (tasks: any[]) => { this.setState({ listSelectedViewTask: tasks }); }
   public changeOwner = async () => {//metodo que cambia de propietario de la tarea por tarea, usuario ausente, usuario delegado
     try {
+      this.setState({ savemsg: true });
       //valide que se haya seleccionado una persona a ausentar
       if (this.state.userIdDelegado == null) alert("Debe seleccionar persona a delegar actividades");
       //Si no tiene persona seleccionada asigne la que esta autenticada
@@ -127,13 +132,14 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
       } else {
         alert("Existen " + actividades.length + " actividades por delegar");
       }
+      this.setState({ savemsg: false });
       //actualizar la web
-      
+
     } catch (e) { log(e); }//Captura errores
   }
   public changeOwnerOfCurrentAbsenceTasks = async () => {
     try {
-      log("Cambiando propietario de tareas de ausencia");
+      log("ListForDelegationOfAbsences Cambiando propietario de tareas de ausencia");
       for (let item of (await this.sp.web.lists.getByTitle("ListForDelegationOfAbsences").items())) {//Recorre las ausencias para obtener las tareas de los usuarios ausentes
         if ((new Date(item.Inicio)) < (new Date()) && (new Date()) < (new Date(item.Fin))) {//Si la fecha de inicio de la ausencia es menor a la fecha actual y es menor a la fecha de fin de la ausencia entonces es una ausencia actual que se esta presentando
           this.getTasksFromTaskListsByUserId(item.AusenteId).then(//Obtiene las tareas del usuario ausente para cambiar el propietario de las tareas
@@ -145,7 +151,7 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
           );
         }
       }
-      log("Finalizado Cambiando propietario de tareas de ausencia");
+      log("ListForDelegationOfAbsences Finalizado Cambiando propietario de tareas de ausencia");
     } catch (e) { log(e); }//Captura errores
   }
   //funcion para guardar en la lista de ListForDelegationOfAbsences los datos de persona ausente, persona delegada, fecha de ausencia y fecha de regreso
@@ -159,10 +165,9 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
         Inicio: this.state.startDate.toISOString(),//Fecha de inicio de la ausencia
         Fin: this.state.endDate.toISOString()//Fecha de fin de la ausencia
       });
-      setTimeout(()=>{
+      setTimeout(() => {
         window.location.href = window.location.href;
-      },2000);
-      
+      }, 2000);
     } catch (e) { log(e); }//Captura errores
 
   }
@@ -211,6 +216,12 @@ export default class GestorDeAusencias extends React.Component<any, any> {//Clas
             /> :
             "Cargando datos..."
           }
+          <p>
+            {this.state.savemsg == true ?
+              "Guardando Datos:" :
+              ""
+            }
+          </p>
           <p>
             <button type="button" onClick={this.changeOwner}>Delegar Actividades</button>
           </p>
